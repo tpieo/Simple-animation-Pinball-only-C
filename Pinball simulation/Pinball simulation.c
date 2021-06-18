@@ -1,5 +1,3 @@
-// ×÷Õß£ºÖ£³±¾¢
-
 #include <stdio.h>
 #include <math.h>
 #include <Windows.h>
@@ -13,10 +11,13 @@
 int cnt = 0;
 struct BALL
 {
-    int X;  //ÇòÔÚx·½ÏòµÄÎ»ÖÃ    o _________ 
-    int Y;  //ÇòÔÚy·½ÏòµÄÎ»ÖÃ     |       y
-    int dX; //ÇòÔÚx·½ÏòµÄËÙ¶È     |
-    int dY; //ÇòÔÚy·½ÏòµÄËÙ¶È     | x
+    int X;  //çƒåœ¨xæ–¹å‘çš„ä½ç½®    o _________ 
+    int Y;  //çƒåœ¨yæ–¹å‘çš„ä½ç½®     |       y
+    int dX; //çƒåœ¨xæ–¹å‘çš„é€Ÿåº¦     |
+    int dY; //çƒåœ¨yæ–¹å‘çš„é€Ÿåº¦     | x
+    char icon;
+    int flag_dX;
+    int flag_dY;
 };
 
 void init_pic(char (*pic)[WIDTH]);
@@ -25,27 +26,27 @@ void process(struct BALL *ball, char (*pic)[WIDTH], int num);
 
 void main()
 {
-    system("mode con cols=100 lines=41"); //ÉèÖÃ´°¿Ú´óĞ¡
+    system("mode con cols=100 lines=41"); //è®¾ç½®çª—å£å¤§å°
     srand(time(NULL));
 
-    //½ÓÊÜÇòµÄ¸öÊı£¬×î´óÊÇ10
-    printf("ÇëÊäÈëÇòµÄ¸öÊı£º");
-    int num; //ÇòµÄ¸öÊı
+    //æ¥å—çƒçš„ä¸ªæ•°ï¼Œæœ€å¤§æ˜¯10
+    printf("è¯·è¾“å…¥çƒçš„ä¸ªæ•°ï¼ˆæœ€å¤§å€¼ï¼š10ï¼‰ï¼š");
+    int num; //çƒçš„ä¸ªæ•°
     scanf("%d", &num);
     if (num > 10)
         num = 10;
 
-    //Í¼Ïñ³õÊ¼»¯
+    //å›¾åƒåˆå§‹åŒ–
     char pic[HIGH][WIDTH] = {0};
     init_pic(pic);
 
-    //Çò³õÊ¼»¯
+    //çƒåˆå§‹åŒ–
     struct BALL *ball = (struct BALL *)malloc(sizeof(struct BALL) * num);
     init_ball(ball, num);
 
     while (1)
     {
-        //´¦ÀíÃ¿Ò»ÕÅÍ¼Ïñ
+        //å¤„ç†æ¯ä¸€å¼ å›¾åƒ
         process(ball, pic, num);
         Sleep(25);
         system("cls");
@@ -78,49 +79,58 @@ void init_pic(char (*pic)[WIDTH])
 
 void init_ball(struct BALL *ball, int num)
 {
+    char icon_8[8] = {'@', '#', '$', '%', 'o', 'O', 'Q', '&'};
     for (int i = 0; i < num; i++)
     {
-        (ball + i)->X = rand() % (HIGH - 5) + 1;
-        (ball + i)->Y = rand() % (WIDTH - 5) + 1;
-        (ball + i)->dX = rand() % 2 + 1;
-        (ball + i)->dY = rand() % 2 + 1;
+        (ball + i)->X = rand() % (HIGH - 6) + 3;
+        (ball + i)->Y = rand() % (WIDTH - 6) + 3;
+        (ball + i)->dX =rand() % 5 - 2;
+        while ((ball + i)->dX == 0)
+            (ball + i)->dX =rand() % 5 - 2;
+        (ball + i)->dY =rand() % 5 - 2;
+        while ((ball + i)->dY == 0)
+            (ball + i)->dY =rand() % 5 - 2;
+        (ball + i)->icon = icon_8[rand() % 8];
+        (ball + i)->flag_dX = 0;
+        (ball + i)->flag_dY = 0;
     }
 }
 
 void process(struct BALL *ball, char (*pic)[WIDTH], int num)
 {
-    //´òÓ¡
+    //æ‰“å°
     for (int i = 0; i < num; i++)
-        pic[(ball + i)->X][(ball + i)->Y] = 'o';
+        pic[(ball + i)->X][(ball + i)->Y] = (ball + i)->icon;
     printf("%s", pic);
     init_pic(pic);
-    for (int i = 0; i < num; i++)
-        pic[(ball + i)->X][(ball + i)->Y] = ' ';
     for (int i = 0; i < num; i++)
     {
         (ball + i)->X += (ball + i)->dX;
         (ball + i)->Y += (ball + i)->dY;
     }
 
-    //±ß½ç¼ì²â
+    //è¾¹ç•Œæ£€æµ‹
     for (int i = 0; i < num; i++)
     {
         if ((ball + i)->X >= HIGH - 3)
         {
             (ball + i)->dX = -(ball + i)->dX;
+            (ball + i)->flag_dX = 1;
             cnt++;
             putchar('\7');
         }
         if ((ball + i)->X <= 2)
             (ball + i)->dX = -(ball + i)->dX;
-        if ((ball + i)->Y >= WIDTH - 5)
+            (ball + i)->flag_dX = 1;
+        if ((ball + i)->Y >= WIDTH - 3)
             (ball + i)->dY = -(ball + i)->dY;
+            (ball + i)->flag_dY = 1;
         if ((ball + i)->Y <= 2)
             (ball + i)->dY = -(ball + i)->dY;
+            (ball + i)->flag_dY = 1;
     }
-    printf("\nÂäµØ´ÎÊı%d", cnt);
 
-    //Åö×²¼ì²â
+    //ç¢°æ’æ£€æµ‹
     for (int i = 0; i < num; i++)
     {
         for (int j = i + 1; j < num; j++)
@@ -128,11 +138,22 @@ void process(struct BALL *ball, char (*pic)[WIDTH], int num)
             double dist = sqrt(pow((ball + i)->X - (ball + j)->X, 2) + pow((ball + i)->Y - ((ball + j)->Y), 2));
             if (dist <= 1)
             {
-                (ball + i)->dX = -(ball + i)->dX;
-                (ball + i)->dY = -(ball + i)->dY;
-                (ball + j)->dX = -(ball + j)->dX;
-                (ball + j)->dY = -(ball + j)->dY;
+                if ((ball + i)->flag_dX == 0)
+                    (ball + i)->dX = -(ball + i)->dX;
+                if ((ball + i)->flag_dY == 0)
+                    (ball + i)->dY = -(ball + i)->dY;
+                if ((ball + j)->flag_dX == 0)
+                    (ball + j)->dX = -(ball + j)->dX;
+                if ((ball + j)->flag_dY == 0)
+                    (ball + j)->dY = -(ball + j)->dY;
             }
         }
     }
+
+    for (int i = 0; i < num; i++)
+    {
+        (ball + i)->flag_dX = 0;
+        (ball + i)->flag_dY = 0;
+    }
+    printf("\nè½åœ°æ¬¡æ•°%d", cnt);
 }
